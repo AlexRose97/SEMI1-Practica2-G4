@@ -8,15 +8,9 @@ import SaveIcon from "@material-ui/icons/Save";
 
 import {
   Button,
-  Divider,
   FormControl,
   FormHelperText,
-  GridList,
-  GridListTile,
-  GridListTileBar,
   InputLabel,
-  NativeSelect,
-  Paper,
   Select,
   TextField,
 } from "@material-ui/core";
@@ -74,6 +68,8 @@ export default function FullFotos({ props }) {
   const [albumElimi, setalbumElimi] = React.useState("");
   const [refreshp, setrefreshp] = React.useState(0);
   const [fotocargada, setfotocargada] = React.useState(false);
+
+  //---------------------------
   const CargarFoto = (e) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -86,106 +82,8 @@ export default function FullFotos({ props }) {
     reader.readAsDataURL(e.target.files[0]);
   };
 
-  //-----------Select Album
-
-  //-----------Cargar Albumes
-  var data = { usuario: Credenciales.User };
-  React.useEffect(() => {
-    fetch("http://" + Credenciales.host + ":3030/api/ListaAlbum/", {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    })
-      .then((response) => response.json())
-      .then((json) => {
-        return json;
-      })
-      .then((json) => {
-        for (let index = 0; index < json.length; index++) {
-          var data2 = { idalbum: json[index].ID_Album };
-          fetch("http://" + Credenciales.host + ":3030/api/ListaFotos/", {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data2),
-          })
-            .then((response) => response.json())
-            .then((json2) => {
-              return json2;
-            })
-            .then((json2) => {
-              json[index].listF = json2;
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-        }
-        setconsulta(json);
-      })
-      .catch((error) => {
-        console.error(error);
-      });
-  }, [refreshp]);
-
-  const selectAlbum = (event) => {
-    const name = event.target.value;
-    setalbumElimi(name);
-    console.log(name);
-  };
-
-  //---------------------------
-
-  const GenerarFotos = (listFots) => {
-    const tileData = [];
-    if (listFots != undefined) {
-      for (let index = 0; index < listFots.length; index++) {
-        tileData.push({
-          img: listFots[index].Direccion,
-          title: listFots[index].NombreImagen,
-          author: Credenciales.User,
-          cols: 1,
-        });
-      }
-    }
-    return tileData;
-  };
-
-  const GenerarAlbums = () => {
-    const nuevoAlbums = [];
-    for (let index = 0; index < consulta.length; index++) {
-      const listFots = consulta[index].listF;
-      const tileData = GenerarFotos(listFots);
-      nuevoAlbums.push(
-        <Grid xs={12}>
-          <h2>Album {consulta[index].NombreAlbum}</h2>
-          <div className={classes.containerList}>
-            <GridList className={classes.gridList} cols={3}>
-              {tileData.map((tile) => (
-                <GridListTile key={tile.img} cols={tile.cols || 1}>
-                  <Paper>
-                    <img
-                      src={tile.img}
-                      alt={tile.title}
-                      className={classes.potho2}
-                    />
-                    <GridListTileBar title={tile.title} />
-                  </Paper>
-                </GridListTile>
-              ))}
-            </GridList>
-          </div>
-        </Grid>
-      );
-    }
-    return nuevoAlbums;
-  };
   //--------------------Eliminar
-  const eliminarAlbum = () => {
+  const guardarFoto = () => {
     var NombreImagen = document.getElementById("txtnombreimagen").value;
     if (NombreImagen != "") {
       if (fotocargada) {
@@ -232,25 +130,10 @@ export default function FullFotos({ props }) {
     }
   };
 
-  //----------------------------
-  const boxAlbums = () => {
-    const misOpciones = [];
-    for (let index = 0; index < consulta.length; index++) {
-      if (consulta[index].TipoAlbum == 0) {
-        misOpciones.push(
-          <option value={consulta[index].ID_Album} key={index}>
-            {consulta[index].NombreAlbum}
-          </option>
-        );
-      }
-    }
-    return misOpciones;
-  };
-
   return (
     <div className={classes.root}>
       <Grid container spacing={4}>
-        <Grid item xs="auto">
+        <Grid item xs={12}>
           <Grid container direction="column" alignItems="center" spacing={4}>
             <Grid item>
               <img src={fCargada} className={classes.photo} />
@@ -286,46 +169,17 @@ export default function FullFotos({ props }) {
                 variant="outlined"
               />
             </Grid>
-            <Grid
-              container
-              direction="row"
-              justify="center"
-              alignItems="center"
-              spacing={4}
-            >
-              <Grid item>
-                <FormControl className={classes.formControl}>
-                  <InputLabel htmlFor="uncontrolled-native">Album</InputLabel>
-                  <Select
-                    native
-                    onChange={selectAlbum}
-                    defaultValue={0}
-                    inputProps={{
-                      name: "age",
-                      id: "filled-age-native-simple",
-                    }}
-                  >
-                    <option aria-label="None" value="" />
-                    {boxAlbums()}
-                  </Select>
-                  <FormHelperText>Selecciona un album</FormHelperText>
-                </FormControl>
-              </Grid>
-              <Grid item>
-                <Button
-                  variant="contained"
-                  onClick={eliminarAlbum}
-                  color="primary"
-                  startIcon={<SaveIcon />}
-                >
-                  Guardar Foto
-                </Button>
-              </Grid>
+            <Grid item>
+              <Button
+                variant="contained"
+                onClick={guardarFoto}
+                color="primary"
+                startIcon={<SaveIcon />}
+              >
+                Guardar Foto
+              </Button>
             </Grid>
           </Grid>
-        </Grid>
-        <Grid item xs>
-          {GenerarAlbums()}
         </Grid>
       </Grid>
     </div>

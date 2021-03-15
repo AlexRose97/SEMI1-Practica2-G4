@@ -85,7 +85,7 @@ export default function FullAlbum({ props }) {
         return json;
       })
       .then((json) => {
-        console.log(json);
+        //console.log(json);
         setconsulta(json);
       })
       .catch((error) => {
@@ -169,13 +169,44 @@ export default function FullAlbum({ props }) {
   const traducirInfo = () => {
     setOpen(false);
     if (idiomatxt !== "") {
-      Swal.fire({
-        title: idiomatxt,
-        text: infoIMG.descripcion,
-        icon: "success",
-      }).then((result) => {
-        setOpen(true);
-      });
+      var data = {
+        idioma: idiomatxt,
+        texto: infoIMG.descripcion,
+      };
+      fetch("http://" + Credenciales.host + ":3030/api/Traducir/", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(data),
+      })
+        .then((response) => response.json())
+        .then((json2) => {
+          return json2;
+        })
+        .then((json2) => {
+          if (json2.status === 200) {
+            Swal.fire({
+              title: idiomatxt,
+              text: json2.texto,
+              icon: "success",
+            }).then((result) => {
+              setOpen(true);
+            });
+          } else {
+            Swal.fire({
+              title: idiomatxt,
+              text: json2.msg,
+              icon: "error",
+            }).then((result) => {
+              setOpen(true);
+            });
+          }
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     } else {
       Swal.fire({
         title: "Error!",
@@ -185,16 +216,12 @@ export default function FullAlbum({ props }) {
         setOpen(true);
       });
     }
-    setidiomatxt("")
+    setidiomatxt("");
   };
 
   return (
     <div className={classes.root}>
       <Grid container spacing={4}>
-        <Grid item xs={12}>
-          <Divider />
-          <h2>Mis Albumes</h2>
-        </Grid>
         {GenerarAlbums()}
       </Grid>
       <Dialog onClose={handleClose} open={open} scroll={"paper"}>

@@ -416,45 +416,6 @@ app.post("/api/Modificar", (req, res) => {
   );
 });
 
-
-//-------------Eliminar Album------------
-app.post("/api/EliminarAlbum", (req, res) => {
-  const { idalbum } = req.body;
-
-  conn.query(
-    `Delete from Imagen where ID_Album=` + idalbum + ``,
-    function (err, result) {
-      if (err) throw err;
-      //res.send(result);
-    }
-  );
-
-  conn.query(
-    `Delete from Album where ID_Album=` + idalbum + ``,
-    function (err, result) {
-      if (err) throw err;
-      res.send(result);
-    }
-  );
-});
-
-//--------Insertar Album--------------------
-app.post("/api/AgregarrAlbum", (req, res) => {
-  const { nombrealbum } = req.body;
-  const { nombreuser } = req.body;
-  conn.query(
-    `Insert into Album (NombreAlbum,TipoAlbum,ID_Usuario) values ('` +
-      nombrealbum +
-      `',0,(Select ID_Usuario from Usuario where NombreUsuario='` +
-      nombreuser +
-      `' ))`,
-    function (err, result) {
-      if (err) throw err;
-      res.send(result);
-    }
-  );
-});
-
 //---------Insertar Imagen------------------
 app.post("/api/InsertarImagen", (req, res) => {
   const { idalbum } = req.body;
@@ -513,6 +474,52 @@ app.post("/api/ListaAlbums", async function (req, res) {
     console.log(error);
     return res.send({
       status: 400,
+      msg: "F--Entro al Catch",
+    });
+  }
+});
+
+//-------------Etiquetas del Perfil------------
+app.post("/api/EtiquetasPerfil", async function (req, res) {
+  const { foto } = req.body;
+  try {
+    let ejemplo = [];
+    for (let index = 0; index < Math.floor(Math.random() * 10) + 5; index++) {
+      ejemplo.push({
+        etiqueta: String(Math.random().toString(36).substring(7)),
+      });
+    }
+    /*
+    esto es lo que leo desde el frontEnd
+    ejemplo=[
+      {etiqueta:"valor"},
+      {etiqueta:"valor"},
+      {etiqueta:"valor"},
+    ]
+    */
+    return res.send(ejemplo);
+  } catch (error) {
+    console.log(error);
+    return res.send({
+      status: 400,
+      msg: "F--Entro al Catch",
+    });
+  }
+});
+
+//-------------Etiquetas del Perfil------------
+app.post("/api/Traducir", async function (req, res) {
+  const { idioma } = req.body;
+  const { texto } = req.body;
+  try {
+    return res.send({
+      status: 200,
+      texto: "Bueno aca va la traduccion desde el server",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.send({
+      status: 500,
       msg: "F--Entro al Catch",
     });
   }
