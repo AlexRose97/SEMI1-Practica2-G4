@@ -132,8 +132,8 @@ export default function FullFotos({ props }) {
 
   return (
     <div className={classes.root}>
-      <Grid container spacing={4}>
-        <Grid item xs={12}>
+      <Grid container alignItems="flex-start" spacing={4}>
+        <Grid item xs>
           <Grid container direction="column" alignItems="center" spacing={4}>
             <Grid item>
               <img src={fCargada} className={classes.photo} />
@@ -157,6 +157,19 @@ export default function FullFotos({ props }) {
                   Cargar Foto
                 </Button>
               </label>
+            </Grid>
+          </Grid>
+        </Grid>
+        <Grid item xs>
+          <Grid container direction="column" alignItems="baseline" spacing={4}>
+            <Grid item>
+              <TextField
+                id="outlined-multiline-static"
+                label="Descripcion"
+                multiline
+                rows={10}
+                variant="outlined"
+              />
             </Grid>
             <Grid item>
               <TextField
