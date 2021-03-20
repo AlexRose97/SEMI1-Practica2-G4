@@ -10,10 +10,11 @@ import { AlbumesU } from "./components/navbar/albumesU";
 import { FotosU } from "./components/navbar/fotosU";
 
 class App extends React.Component {
+  /*
   constructor(props) {
     super(props);
   }
-
+*/
   render() {
     return (
       <Router>

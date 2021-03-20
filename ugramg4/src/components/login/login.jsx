@@ -5,9 +5,10 @@ import Credenciales from "../Credenciales";
 import Swal from "sweetalert2";
 
 class Login extends React.Component {
-  constructor(props) {
+ /* constructor(props) {
     super(props);
   }
+  */
 
   metodoValidarUsuario() {
     //variables recolectadas
@@ -57,7 +58,7 @@ class Login extends React.Component {
   //---------------------------
   metodoEntrar() {
     Credenciales.login(() => {
-      if (Credenciales.Perfil == "") {
+      if (Credenciales.Perfil === "") {
         Credenciales.Perfil = Credenciales.ImagenPerfilDefault;
       }
       this.props.history.push("/Inicio");
@@ -72,7 +73,7 @@ class Login extends React.Component {
         <div className="content">
           <div className="header">Login</div>
           <div className="image">
-            <img src={loginImg} />
+            <img src={loginImg} alt="" />
           </div>
           <div className="form">
             <div className="form-group">
@@ -95,14 +96,21 @@ class Login extends React.Component {
             </div>
           </div>
         </div>
-        <div className="footer">
-          <button
-            type="button"
-            className="btn"
-            onClick={this.metodoValidarUsuario.bind(this)}
-          >
-            Entrar
-          </button>
+        <div>
+          <div style={{padding:5}}>
+            <button
+              type="button"
+              className="btn"
+              onClick={this.metodoValidarUsuario.bind(this)}
+            >
+              Entrar
+            </button>
+          </div>
+          <div>
+            <button type="button" className="btn">
+              Reconocimiento Facial
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -35,7 +35,7 @@ class Register extends React.Component {
 
     alert(usuarioregistro + nombreregistro+contrasena+contrasenatwo);
     alert(Credenciales.Perfil);
-    if(contrasena==contrasenatwo){
+    if(contrasena===contrasenatwo){
       var url= "http://"+Credenciales.host+":3030/api/Registro/";
       //envio user:string, name:string,pass:string,contrasena:string imagen:Imagenen64 (string) 
       var data={user:usuarioregistro,name:nombreregistro,pass:contrasena,imagen:Credenciales.Perfil}
@@ -59,7 +59,7 @@ class Register extends React.Component {
       alert(response.usuario);
       
       
-      if(response.autorizacion!=false){
+      if(response.autorizacion!==false){
         
         Credenciales.Nombre =response.nombre;
         Credenciales.User =response.usuario;
@@ -84,7 +84,7 @@ class Register extends React.Component {
 
   MetodoEntrar(){
     Credenciales.login(() => {
-      if (Credenciales.Perfil == "") {
+      if (Credenciales.Perfil === "") {
         Credenciales.Perfil = Credenciales.ImagenPerfilDefault;
       }
       this.props.history.push("/Inicio");
@@ -143,7 +143,7 @@ class Register extends React.Component {
           </div>
           <div className="content">
             <div className="image">
-              <img src={this.state.fperfil}  />
+              <img src={this.state.fperfil} alt="" />
             </div>
             <div className="footer">
               <input

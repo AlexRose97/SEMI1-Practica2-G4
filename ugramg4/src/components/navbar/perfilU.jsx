@@ -130,10 +130,9 @@ export default function FullPerfil({ props }) {
     reader.onload = () => {
       if (reader.readyState === 2) {
         setFperfil(reader.result);
+        setGuardar(true);
         Credenciales.Imagen = Credenciales.Perfil;
         Credenciales.Perfil = reader.result;
-
-        setGuardar(true);
       }
     };
     reader.readAsDataURL(e.target.files[0]);

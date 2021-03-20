@@ -1,9 +1,10 @@
 import React from "react";
 
 export class Err404 extends React.Component {
-  constructor(props) {
+  /*constructor(props) {
     super(props);
   }
+  */
 
   render() {
     return (

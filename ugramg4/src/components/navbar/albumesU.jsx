@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Navbar from "./Navbar";
 import { makeStyles } from "@material-ui/core/styles";
 import Grid from "@material-ui/core/Grid";
@@ -8,7 +8,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Divider,
   GridList,
   GridListTile,
   GridListTileBar,
@@ -26,9 +25,10 @@ import Credenciales from "../Credenciales";
  */
 
 export class AlbumesU extends React.Component {
+  /*
   constructor(props) {
     super(props);
-  }
+  }*/
   render() {
     return (
       <div style={{ minWidth: "100%" }}>
@@ -123,12 +123,7 @@ export default function FullAlbum({ props }) {
           <div className={classes.containerList}>
             <GridList className={classes.gridList} cols={3}>
               {tileData.map((tile) => (
-                <GridListTile
-                  key={
-                    Math.random().toString(36).substring(7) + String(tile.img)
-                  }
-                  cols={tile.cols || 1}
-                >
+                <GridListTile key={String(tile.img)} cols={tile.cols || 1}>
                   <Paper>
                     <img
                       src={tile.img}

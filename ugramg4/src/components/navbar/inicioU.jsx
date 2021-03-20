@@ -71,7 +71,7 @@ export default function FullInicio({ props }) {
     for (let index = 0; index < consulta.length; index++) {
       const element = consulta[index];
       listEtiquetas.push(
-        <Chip label={consulta[index].etiqueta} color="secondary" />
+        <Chip key={index} label={consulta[index].etiqueta} color="secondary" />
       );
     }
 
@@ -87,7 +87,6 @@ export default function FullInicio({ props }) {
         <Grid container direction="column" xs spacing={2}>
           <Grid item xs>
             <TextField
-              id="outlined-read-only-input"
               label="Usuario"
               defaultValue={Credenciales.User}
               InputProps={{
@@ -98,7 +97,6 @@ export default function FullInicio({ props }) {
           </Grid>
           <Grid item xs>
             <TextField
-              id="outlined-read-only-input"
               label="Nombre Completo"
               defaultValue={Credenciales.Nombre}
               InputProps={{
