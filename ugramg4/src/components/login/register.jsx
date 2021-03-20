@@ -2,95 +2,86 @@ import { Button } from "@material-ui/core";
 import React from "react";
 import { withRouter } from "react-router-dom";
 import Credenciales from "../Credenciales";
-
+import Swal from "sweetalert2";
 
 class Register extends React.Component {
   constructor(props) {
     super(props);
-    Credenciales.Perfil=Credenciales.ImagenPerfilDefault;
+    Credenciales.Perfil = Credenciales.ImagenPerfilDefault;
     this.state = {
-      fperfil:Credenciales.ImagenPerfilDefault,
+      fperfil: Credenciales.ImagenPerfilDefault,
     };
-    
   }
   CargarFoto = (e) => {
-
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.readyState === 2) {
         this.setState({ fperfil: reader.result });
         Credenciales.Perfil = reader.result;
-
       }
     };
     reader.readAsDataURL(e.target.files[0]);
   };
 
   MetodoRegistrarUsuario() {
-    
     var usuarioregistro = document.getElementById("txtusuario").value;
     var nombreregistro = document.getElementById("txtnombre").value;
-    var contrasena= document.getElementById("txtpassword").value;  
-    var contrasenatwo =document.getElementById("txtpasswordconfirm").value;;
-
-    alert(usuarioregistro + nombreregistro+contrasena+contrasenatwo);
-    alert(Credenciales.Perfil);
-    if(contrasena===contrasenatwo){
-      var url= "http://"+Credenciales.host+":3030/api/Registro/";
-      //envio user:string, name:string,pass:string,contrasena:string imagen:Imagenen64 (string) 
-      var data={user:usuarioregistro,name:nombreregistro,pass:contrasena,imagen:Credenciales.Perfil}
+    var contrasena = document.getElementById("txtpassword").value;
+    var contrasenatwo = document.getElementById("txtpasswordconfirm").value;
+    if (contrasena === contrasenatwo) {
+      var url = "http://" + Credenciales.host + ":3030/api/Registro/";
+      //envio user:string, name:string,pass:string,contrasena:string imagen:Imagenen64 (string)
+      var data = {
+        username: usuarioregistro,
+        name: nombreregistro,
+        password: contrasena,
+        foto: Credenciales.Perfil,
+      };
       fetch(url, {
-        method: 'POST', // or 'PUT'
+        method: "POST", // or 'PUT'
         body: JSON.stringify(data), // data can be `string` or {object}!
-        headers:{
-          'Content-Type': 'application/json'
-        }
-      }).then(res => res.json())
-      .catch(function(error) {
-        alert(error);
+        headers: {
+          "Content-Type": "application/json",
+        },
       })
-      .then((response)=>{
-    
-      //Response trae {autorizacion:boolean,usuario:string, nombre:string,apellido:string,imagen:string}
-      //La autorizacion es que si el usuario que se envio no esta registrado ya , si esta registrado retorna false
-      //si no esta registrado retorna true 
-
-      alert(response.autorizacion);
-      alert(response.usuario);
-      
-      
-      if(response.autorizacion!==false){
-        
-        Credenciales.Nombre =response.nombre;
-        Credenciales.User =response.usuario;
-        Credenciales.Autorizacion=response.autorizacion;
-        Credenciales.Imagen=response.imagen;
-        Credenciales.Perfil=response.imagen;
-        Credenciales.Contrasena=response.Contrasena;
-        this.MetodoEntrar();
-      }else{
-        alert("Usuario Invalido");
-      }
-    
-    });
-    }else{
+        .then((res) => res.json())
+        .catch(function (error) {
+          alert(error);
+        })
+        .then((response) => {
+          if (response.status === 200) {
+            Swal.fire({
+              title: "Exito!",
+              text: response.msg,
+              icon: "success",
+            }).then((result) => {
+              Credenciales.login(() => {
+                Credenciales.Perfil = response.user.foto;
+                Credenciales.User = response.user.username;
+                Credenciales.Nombre = response.user.name;
+                Credenciales.Contrasena = response.user.password;
+                this.props.history.push("/Inicio");
+              });
+            });
+          } else {
+            Swal.fire({
+              title: "Error!",
+              text: response.msg,
+              icon: "error",
+            });
+          }
+        });
+    } else {
       alert("Contraseñas no coinciden");
     }
-    //url para registro
-    
-
-    alert("Presiono Registrar");
   }
 
-  MetodoEntrar(){
+  MetodoEntrar() {
     Credenciales.login(() => {
       if (Credenciales.Perfil === "") {
         Credenciales.Perfil = Credenciales.ImagenPerfilDefault;
       }
       this.props.history.push("/Inicio");
-
-
-
     });
     //this.props.history.push("/navegacion");
     //window.location.href = "/navegacion";

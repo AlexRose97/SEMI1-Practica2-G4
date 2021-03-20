@@ -32,7 +32,11 @@ export class AlbumesU extends React.Component {
   render() {
     return (
       <div style={{ minWidth: "100%" }}>
-        <Navbar props={this.props} tituloP={"Albumes"} />
+        <Navbar
+          props={this.props}
+          tituloP={"Albumes"}
+          foto={Credenciales.Perfil}
+        />
         <FullAlbum props={this.props} />
       </div>
     );
@@ -86,6 +90,7 @@ export default function FullAlbum({ props }) {
       })
       .then((json) => {
         //console.log(json);
+        console.log(json);
         setconsulta(json);
       })
       .catch((error) => {
@@ -98,8 +103,8 @@ export default function FullAlbum({ props }) {
     if (listFots != undefined) {
       for (let index = 0; index < listFots.length; index++) {
         tileData.push({
-          img: listFots[index].Direccion,
-          title: listFots[index].NombreImagen,
+          img: listFots[index].urlfoto,
+          title: listFots[index].nombre,
           author: Credenciales.User,
           descripcion:
             "Cras mattis consectetur purus sit amet fermentum. Cras justo odio," +
@@ -119,7 +124,7 @@ export default function FullAlbum({ props }) {
       const tileData = GenerarFotos(listFots);
       nuevoAlbums.push(
         <Grid xs={12}>
-          <h2>Album {consulta[index].NombreAlbum}</h2>
+          <h2>Album {consulta[index].nombre}</h2>
           <div className={classes.containerList}>
             <GridList className={classes.gridList} cols={3}>
               {tileData.map((tile) => (

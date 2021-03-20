@@ -13,7 +13,11 @@ export class InicioU extends React.Component {
   render() {
     return (
       <div style={{ minWidth: "100%" }}>
-        <Navbar props={this.props} tituloP={"Inicio"} />
+        <Navbar
+          props={this.props}
+          tituloP={"Inicio"}
+          foto={Credenciales.Perfil}
+        />
         <FullInicio props={this.props} />
       </div>
     );
@@ -84,44 +88,48 @@ export default function FullInicio({ props }) {
         <Grid item xs={12}>
           <h1>Datos Personales</h1>
         </Grid>
-        <Grid container direction="column" xs spacing={2}>
-          <Grid item xs>
-            <TextField
-              label="Usuario"
-              defaultValue={Credenciales.User}
-              InputProps={{
-                readOnly: true,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs>
-            <TextField
-              label="Nombre Completo"
-              defaultValue={Credenciales.Nombre}
-              InputProps={{
-                readOnly: true,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs>
-            <Button variant="contained" color="primary" onClick={irPerfil}>
-              Editar Datos
-            </Button>
-          </Grid>
-          <Grid item xs style={{ padding: 20 }}>
-            <Button variant="contained" color="primary">
-              Escanear texto de una imagen
-            </Button>
+        <Grid item xs={6}>
+          <Grid container direction="column" spacing={2}>
+            <Grid item xs>
+              <TextField
+                label="Usuario"
+                defaultValue={Credenciales.User}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs>
+              <TextField
+                label="Nombre Completo"
+                defaultValue={Credenciales.Nombre}
+                InputProps={{
+                  readOnly: true,
+                }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs>
+              <Button variant="contained" color="primary" onClick={irPerfil}>
+                Editar Datos
+              </Button>
+            </Grid>
+            <Grid item xs style={{ padding: 20 }}>
+              <Button variant="contained" color="primary">
+                Escanear texto de una imagen
+              </Button>
+            </Grid>
           </Grid>
         </Grid>
-        <Grid container direction="column" xs spacing={2}>
-          <Grid item xs>
-            <div style={{ flexDirection: "row", display: "flex" }}>
-              <img src={fperfil} className={classes.photo} />
-              <div style={{ width: 150 }}>{etiquetas()}</div>
-            </div>
+        <Grid item xs={6}>
+          <Grid container direction="column" spacing={2}>
+            <Grid item xs>
+              <div style={{ flexDirection: "row", display: "flex" }}>
+                <img src={fperfil} className={classes.photo} />
+                <div style={{ width: 150 }}>{etiquetas()}</div>
+              </div>
+            </Grid>
           </Grid>
         </Grid>
       </Grid>

@@ -22,7 +22,11 @@ export class FotosU extends React.Component {
   render() {
     return (
       <div style={{ minWidth: "100%" }}>
-        <Navbar props={this.props} tituloP={"Fotos"} />
+        <Navbar
+          props={this.props}
+          tituloP={"Fotos"}
+          foto={Credenciales.Perfil}
+        />
         <FullFotos props={this.props} />
       </div>
     );

@@ -27,6 +27,13 @@ CREATE TABLE picture (
     FOREIGN KEY (idbook) REFERENCES book (idbook) ON DELETE CASCADE  
 );
 
+/*
+INSERT INTO client (name, username, password,urlfoto)
+VALUES ('admin','admin','admin','https://static.wikia.nocookie.net/new-fantendo/images/2/24/Soy_Admin.jpg/revision/latest/scale-to-width-down/720?cb=20200728204122&path-prefix=es');
+*/
+
+/*
 drop TABLE picture;
 drop TABLE book;
 drop TABLE client;
+*/

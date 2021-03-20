@@ -13,12 +13,7 @@ export class PerfilU extends React.Component {
     super(props);
   }
   render() {
-    return (
-      <div style={{ minWidth: "100%" }}>
-        <Navbar props={this.props} tituloP={Credenciales.User} />
-        <FullPerfil props={this.props} />
-      </div>
-    );
+    return <FullPerfil props={this.props} />;
   }
 }
 
@@ -43,35 +38,52 @@ const useStyles = makeStyles((theme) => ({
 export default function FullPerfil({ props }) {
   const classes = useStyles();
   const [editarTxt, setEditarTxt] = useState(false); //variable para desbloquear los input
-  const [fperfil, setFperfil] = useState(Credenciales.Perfil); //variable para desbloquear los input
   const [tempguardar, setGuardar] = useState(false);
+  const [newfoto, setnewfoto] = useState(Credenciales.Perfil); //variable para desbloquear los input
+  const [newuser, setnewuser] = useState(Credenciales.User); //variable para desbloquear los input
+  const [newname, setnewname] = useState(Credenciales.Nombre); //variable para desbloquear los input
+  const [confpass, setconfpass] = useState(""); //variable para desbloquear los input
 
   const EditarDatos = () => {
-    //alternar enable/disabled
-    setEditarTxt(!editarTxt);
+    setEditarTxt(true);
+  };
+
+  //cargar en variables el texto ingresado
+  const inputChange = (e) => {
+    let { id, value } = e.target;
+    if (id === "txtusuario") {
+      setnewuser(value);
+    } else if (id === "txtnombre") {
+      setnewname(value);
+    } else if (id === "txtpassword") {
+      setconfpass(value);
+    }
+  };
+
+  //volver a los estados iniciales
+  const cancelarT = () => {
+    setEditarTxt(false);
+    setnewfoto(Credenciales.Perfil);
+    setnewuser(Credenciales.User); //variable para desbloquear los input
+    setnewname(Credenciales.Nombre); //variable para desbloquear los input
+    setconfpass(""); //variable para desbloquear los input
+    setGuardar(false);
   };
 
   const GuardarDatos = () => {
-    //alternar enable/disabled
-    setEditarTxt(!editarTxt);
-    var usuariocambio = document.getElementById("txtusuario").value;
-    var nombrecambio = document.getElementById("txtnombre").value;
-    var contrasenaverificacion = document.getElementById("txtpassword").value;
-
     var url = "http://" + Credenciales.host + ":3030/api/Modificar/";
-    var foto = false;
-
-    if (tempguardar) {
-      foto = Credenciales.Perfil;
-    }
     var MD5 = require("MD5");
-    var contrasenacifrada = MD5(contrasenaverificacion);
+    var contrasenacifrada = MD5(confpass);
+    var foto = newfoto;
+    if (tempguardar !== true) {
+      foto = false;
+    }
     if (Credenciales.Contrasena === contrasenacifrada) {
       var data = {
-        useractual: Credenciales.User,
-        usercambio: usuariocambio,
-        name: nombrecambio,
-        imagen: foto,
+        newuser: newuser,
+        user: Credenciales.User,
+        name: newname,
+        foto: foto,
       };
       fetch(url, {
         method: "POST", // or 'PUT'
@@ -85,29 +97,21 @@ export default function FullPerfil({ props }) {
           alert(error);
         })
         .then((response) => {
-          //Response trae {autorizacion:boolean,usuario:string, nombre:string,apellido:string,imagen:string}
-          //La autorizacion es si la contraseña es correcta retorno un true
-          //si la contraseña es incorrecta retorna false y no hace ningun cambio
-
-          if (response.autorizacion !== false) {
-            //actualiza las credenciales
-            Credenciales.Nombre = response.nombre;
-            Credenciales.User = response.usuario;
-            Credenciales.Autorizacion = response.autorizacion;
-            if (response.imagen !== false) {
-              Credenciales.Imagen = response.imagen;
-              Credenciales.Perfil = response.imagen;
-              setFperfil(Credenciales.Perfil);
-            }
+          if (response.status === 200) {
             Swal.fire({
-              title: "Perfil",
-              text: "Informacion Modificada",
+              title: "Exito!",
+              text: response.msg,
               icon: "success",
             });
+            Credenciales.Perfil = response.user.urlfoto;
+            Credenciales.User = response.user.username;
+            Credenciales.Nombre = response.user.name;
+            Credenciales.Contrasena = response.user.password;
+            const x = cancelarT();
           } else {
             Swal.fire({
               title: "Error!",
-              text: "El usuario ya existe:(",
+              text: response.msg,
               icon: "error",
             });
           }
@@ -118,10 +122,6 @@ export default function FullPerfil({ props }) {
         text: "Contraseña invalida",
         icon: "error",
       });
-      Credenciales.Perfil = Credenciales.Imagen;
-      document.getElementById("txtusuario").value = Credenciales.User;
-      document.getElementById("txtnombre").value = Credenciales.Nombre;
-      document.getElementById("txtpassword").value = "";
     }
   };
 
@@ -129,115 +129,139 @@ export default function FullPerfil({ props }) {
     const reader = new FileReader();
     reader.onload = () => {
       if (reader.readyState === 2) {
-        setFperfil(reader.result);
+        setnewfoto(reader.result);
         setGuardar(true);
-        Credenciales.Imagen = Credenciales.Perfil;
-        Credenciales.Perfil = reader.result;
       }
     };
     reader.readAsDataURL(e.target.files[0]);
   };
 
   return (
-    <div className={classes.root}>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-          <h1>Datos Personales</h1>
-        </Grid>
-        <Grid
-          container
-          direction="column"
-          alignItems="center"
-          xs={7}
-          spacing={4}
-        >
-          <Grid item xs>
-            <img src={fperfil} className={classes.photo} />
+    <div style={{ width: "100%" }}>
+      <div>
+        <Navbar
+          props={props}
+          tituloP={Credenciales.User}
+          foto={Credenciales.Perfil}
+        />
+      </div>
+      <div className={classes.root}>
+        <Grid container spacing={2}>
+          <Grid item xs={12}>
+            <h1>Datos Personales</h1>
           </Grid>
-          <Grid item xs>
-            <input
-              disabled={!editarTxt}
-              accept="image/*"
-              className={classes.input}
-              id="contained-button-file"
-              multiple
-              type="file"
-              onChange={CargarFoto}
-            />
-            <label htmlFor="contained-button-file">
-              <Button
-                disabled={!editarTxt}
-                variant="contained"
-                color="primary"
-                component="span"
-                startIcon={<CloudUploadIcon />}
-              >
-                Nueva Foto
-              </Button>
-            </label>
-          </Grid>
-        </Grid>
-        <Grid
-          container
-          direction="column"
-          alignItems="flex-start"
-          xs={5}
-          spacing={2}
-        >
-          <Grid item xs>
-            <TextField
-              id="txtusuario"
-              label="Usuario"
-              defaultValue={Credenciales.User}
-              InputProps={{
-                readOnly: !editarTxt,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs>
-            <TextField
-              id="txtnombre"
-              label="Nombre Completo"
-              defaultValue={Credenciales.Nombre}
-              InputProps={{
-                readOnly: !editarTxt,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid item xs>
-            <TextField
-              id="txtpassword"
-              label="Confirmar Contraseña"
-              type="password"
-              defaultValue=""
-              InputProps={{
-                readOnly: !editarTxt,
-              }}
-              variant="outlined"
-            />
-          </Grid>
-          <Grid container direction="row" justify="flex-start" xs spacing={4}>
-            <Grid item>
-              <Button
-                disabled={!editarTxt}
-                variant="contained"
-                color="primary"
-                onClick={GuardarDatos}
-                startIcon={<SaveIcon />}
-              >
-                Guardar
-              </Button>
+          <Grid
+            container
+            direction="column"
+            alignItems="center"
+            xs={7}
+            spacing={4}
+          >
+            <Grid item xs>
+              <img src={newfoto} className={classes.photo} />
             </Grid>
-            <Grid item>
-              <Button variant="contained" color="primary" onClick={EditarDatos}>
-                {!editarTxt ? "Editar" : "Cancelar"}
-              </Button>
+            <Grid item xs>
+              <input
+                disabled={!editarTxt}
+                accept="image/*"
+                className={classes.input}
+                id="contained-button-file"
+                multiple
+                type="file"
+                onChange={CargarFoto}
+              />
+              <label htmlFor="contained-button-file">
+                <Button
+                  disabled={!editarTxt}
+                  variant="contained"
+                  color="primary"
+                  component="span"
+                  startIcon={<CloudUploadIcon />}
+                >
+                  Nueva Foto
+                </Button>
+              </label>
             </Grid>
           </Grid>
+          <Grid
+            container
+            direction="column"
+            alignItems="flex-start"
+            xs={5}
+            spacing={2}
+          >
+            <Grid item xs>
+              <TextField
+                id="txtusuario"
+                label="Usuario"
+                onChange={inputChange}
+                value={newuser}
+                InputProps={{
+                  readOnly: !editarTxt,
+                }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs>
+              <TextField
+                id="txtnombre"
+                label="Nombre Completo"
+                onChange={inputChange}
+                value={newname}
+                InputProps={{
+                  readOnly: !editarTxt,
+                }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs>
+              <TextField
+                id="txtpassword"
+                label="Confirmar Contraseña"
+                type="password"
+                onChange={inputChange}
+                value={confpass}
+                InputProps={{
+                  readOnly: !editarTxt,
+                }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid container direction="row" justify="flex-start" xs spacing={4}>
+              <Grid item>
+                <Button
+                  disabled={!editarTxt}
+                  variant="contained"
+                  color="primary"
+                  onClick={GuardarDatos}
+                  startIcon={<SaveIcon />}
+                >
+                  Guardar
+                </Button>
+              </Grid>
+              <Grid item>
+                {!editarTxt ? (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={EditarDatos}
+                  >
+                    Editar
+                  </Button>
+                ) : (
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={cancelarT}
+                  >
+                    Cancelar
+                  </Button>
+                )}
+              </Grid>
+            </Grid>
+          </Grid>
         </Grid>
-      </Grid>
+      </div>
     </div>
   );
 }

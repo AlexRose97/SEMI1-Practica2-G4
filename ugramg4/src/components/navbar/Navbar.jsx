@@ -22,7 +22,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function Navbar({ props, tituloP }) {
+export default function Navbar({ props, tituloP, foto}) {
   const classes = useStyles();
   const [openDraw, setopenDraw] = useState(false);
   const [anchor, setAnchor] = useState("left");
@@ -74,7 +74,7 @@ export default function Navbar({ props, tituloP }) {
           </Typography>
           <MenuItem>
             <Button color="inherit" onClick={abrirPerfil}>
-              <Avatar alt="Remy Sharp" src={Credenciales.Perfil} />
+              <Avatar alt="Remy Sharp" src={foto} />
             </Button>
           </MenuItem>
         </Toolbar>

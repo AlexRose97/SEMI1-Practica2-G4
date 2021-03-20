@@ -5,7 +5,7 @@ import Credenciales from "../Credenciales";
 import Swal from "sweetalert2";
 
 class Login extends React.Component {
- /* constructor(props) {
+  /* constructor(props) {
     super(props);
   }
   */
@@ -17,10 +17,10 @@ class Login extends React.Component {
     //falta hacer una validacion si el texto esta vacio*************
     //la Api se debe llamar /api/Login
     //retorna
-    var url = "http://" + Credenciales.host + ":3030/api/Login/";
+    var url = "http://" + Credenciales.host + ":3030/api/LoginDatos/";
     //alert(usuario);
     //envio user:string pass:string
-    var data = { user: usuario, pass: contrasena };
+    var data = { username: usuario, password: contrasena };
     fetch(url, {
       method: "POST", // or 'PUT'
       body: JSON.stringify(data), // data can be `string` or {object}!
@@ -33,40 +33,23 @@ class Login extends React.Component {
         alert(error);
       })
       .then((response) => {
-        //Response trae {autorizacion:boolean,usuario:string, nombre:string,apellido:string,imagen:string}
-        // alert(response.autorizacion);
-        // alert(response.usuario);
-
-        if (response.autorizacion !== false) {
-          Credenciales.Nombre = response.nombre;
-          Credenciales.User = response.usuario;
-          Credenciales.Autorizacion = response.autorizacion;
-          Credenciales.Imagen = response.imagen;
-          Credenciales.Perfil = response.imagen;
-          Credenciales.Contrasena = response.contrasena;
-          this.metodoEntrar();
+        if (response.status === 200) {
+          Credenciales.login(() => {
+            Credenciales.Perfil = response.user.urlfoto;
+            Credenciales.User = response.user.username;
+            Credenciales.Nombre = response.user.name;
+            Credenciales.Contrasena = response.user.password;
+            this.props.history.push("/Inicio");
+          });
         } else {
           Swal.fire({
             title: "Error!",
-            text: "Datos Incorrectos",
+            text: response.msg,
             icon: "error",
           });
         }
       });
   }
-
-  //---------------------------
-  metodoEntrar() {
-    Credenciales.login(() => {
-      if (Credenciales.Perfil === "") {
-        Credenciales.Perfil = Credenciales.ImagenPerfilDefault;
-      }
-      this.props.history.push("/Inicio");
-    });
-    //this.props.history.push("/navegacion");
-    //window.location.href = "/navegacion";
-  }
-
   render() {
     return (
       <div className="base-container" ref={this.props.containerRef}>
@@ -97,7 +80,7 @@ class Login extends React.Component {
           </div>
         </div>
         <div>
-          <div style={{padding:5}}>
+          <div style={{ padding: 5 }}>
             <button
               type="button"
               className="btn"
