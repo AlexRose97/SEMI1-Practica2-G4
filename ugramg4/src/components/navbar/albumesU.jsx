@@ -106,10 +106,7 @@ export default function FullAlbum({ props }) {
           img: listFots[index].urlfoto,
           title: listFots[index].nombre,
           author: Credenciales.User,
-          descripcion:
-            "Cras mattis consectetur purus sit amet fermentum. Cras justo odio," +
-            "dapibus ac facilisis in, egestas eget quam. Morbi leo risus, porta" +
-            "ac consectetur ac, vestibulum at eros",
+          descripcion: listFots[index].descripcion,
           cols: 1,
         });
       }
@@ -123,7 +120,7 @@ export default function FullAlbum({ props }) {
       const listFots = consulta[index].listF;
       const tileData = GenerarFotos(listFots);
       nuevoAlbums.push(
-        <Grid xs={12}>
+        <Grid item xs={12} key={index}>
           <h2>Album {consulta[index].nombre}</h2>
           <div className={classes.containerList}>
             <GridList className={classes.gridList} cols={3}>
@@ -251,11 +248,18 @@ export default function FullAlbum({ props }) {
               <option value={"Español"}>Español</option>
               <option value={"Ruso"}>Ruso</option>
             </Select>
-            <Button onClick={traducirInfo}>Traducir</Button>
+            <Button variant="contained" color="primary" onClick={traducirInfo}>
+              Traducir
+            </Button>
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button autoFocus onClick={handleClose} color="primary">
+          <Button
+            autoFocus
+            onClick={handleClose}
+            variant="contained"
+            color="secondary"
+          >
             OK
           </Button>
         </DialogActions>
