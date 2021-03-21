@@ -60,6 +60,7 @@ class Register extends React.Component {
                 Credenciales.User = response.user.username;
                 Credenciales.Nombre = response.user.name;
                 Credenciales.Contrasena = response.user.password;
+                Credenciales.Iduser = response.user.idiclient;
                 this.props.history.push("/Inicio");
               });
             });

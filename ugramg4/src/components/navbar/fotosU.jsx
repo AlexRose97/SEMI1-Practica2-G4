@@ -5,15 +5,9 @@ import Grid from "@material-ui/core/Grid";
 import CloudUploadIcon from "@material-ui/icons/CloudUpload";
 import Credenciales from "../Credenciales";
 import SaveIcon from "@material-ui/icons/Save";
+import Swal from "sweetalert2";
 
-import {
-  Button,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  Select,
-  TextField,
-} from "@material-ui/core";
+import { Button, TextField } from "@material-ui/core";
 
 export class FotosU extends React.Component {
   constructor(props) {
@@ -68,11 +62,27 @@ const useStyles = makeStyles((theme) => ({
 export default function FullFotos({ props }) {
   const classes = useStyles();
   const [fCargada, setFCargada] = useState(Credenciales.ImagenPerfilDefault); //variable para desbloquear los input
-  const [consulta, setconsulta] = React.useState("");
-  const [albumElimi, setalbumElimi] = React.useState("");
-  const [refreshp, setrefreshp] = React.useState(0);
   const [fotocargada, setfotocargada] = React.useState(false);
+  const [newdescripcion, setnewdescripcion] = React.useState("");
+  const [newname, setnewname] = React.useState("");
 
+  //cargar en variables el texto ingresado
+  const inputChange = (e) => {
+    let { id, value } = e.target;
+    if (id === "txtdescripcion") {
+      setnewdescripcion(value);
+    } else if (id === "txtnombreimagen") {
+      setnewname(value);
+    }
+  };
+
+  //volver a los estados iniciales
+  const cancelarT = () => {
+    setFCargada(Credenciales.ImagenPerfilDefault); //variable para desbloquear los input
+    setfotocargada(false);
+    setnewdescripcion("");
+    setnewname("");
+  };
   //---------------------------
   const CargarFoto = (e) => {
     const reader = new FileReader();
@@ -80,57 +90,61 @@ export default function FullFotos({ props }) {
       if (reader.readyState === 2) {
         setFCargada(reader.result);
         setfotocargada(true);
-        //Credenciales.Perfil = reader.result;
       }
     };
     reader.readAsDataURL(e.target.files[0]);
   };
 
-  //--------------------Eliminar
   const guardarFoto = () => {
-    var NombreImagen = document.getElementById("txtnombreimagen").value;
-    if (NombreImagen != "") {
-      if (fotocargada) {
-        if (albumElimi != "") {
-          var data = {
-            idalbum: albumElimi,
-            name: NombreImagen,
-            imagen: fCargada,
-          };
-          fetch("http://" + Credenciales.host + ":3030/api/InsertarImagen/", {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(data),
+    var url = "http://" + Credenciales.host + ":3030/api/InsertarImagen/";
+    if (fotocargada) {
+      if (newdescripcion !== "" && newname !== "") {
+        var data = {
+          descripcion: newdescripcion,
+          nombre: newname,
+          foto: fCargada,
+          idiclient: Credenciales.Iduser,
+        };
+        fetch(url, {
+          method: "POST", // or 'PUT'
+          body: JSON.stringify(data), // data can be `string` or {object}!
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+          .then((res) => res.json())
+          .catch(function (error) {
+            alert(error);
           })
-            .then((response) => response.json())
-            .then((json2) => {
-              return json2;
-            })
-            .then((json2) => {
-              //aca la rspuesta
-              alert(json2);
-              setalbumElimi("");
-            })
-            .catch((error) => {
-              console.error(error);
-            });
-
-          setFCargada(Credenciales.ImagenPerfilDefault);
-          document.getElementById("txtnombreimagen").value =
-            "Foto" + Math.floor(Math.random() * 1000);
-          // props.history.push("/Fotos");
-        } else {
-          alert("Selecciona un album a agregar");
-        }
-        setrefreshp(refreshp + 1);
+          .then((response) => {
+            if (response.status === 200) {
+              Swal.fire({
+                title: "Exito",
+                text: response.msg,
+                icon: "success",
+              });
+              const x = cancelarT();
+            } else {
+              Swal.fire({
+                title: "Error!",
+                text: response.msg,
+                icon: "error",
+              });
+            }
+          });
       } else {
-        alert("Debe Cargar Una Foto");
+        Swal.fire({
+          title: "Error!",
+          text: "El nombre y la descripcion son obligatorios",
+          icon: "error",
+        });
       }
     } else {
-      alert("Debe colocarle un nombre a la imagen");
+      Swal.fire({
+        title: "Error!",
+        text: "Debes Cargar una Foto",
+        icon: "error",
+      });
     }
   };
 
@@ -168,8 +182,10 @@ export default function FullFotos({ props }) {
           <Grid container direction="column" alignItems="baseline" spacing={4}>
             <Grid item>
               <TextField
-                id="outlined-multiline-static"
+                id="txtdescripcion"
                 label="Descripcion"
+                onChange={inputChange}
+                value={newdescripcion}
                 multiline
                 rows={10}
                 variant="outlined"
@@ -179,10 +195,8 @@ export default function FullFotos({ props }) {
               <TextField
                 id="txtnombreimagen"
                 label="Nombre de la Foto"
-                defaultValue={"Foto" + Math.floor(Math.random() * 1000)}
-                InputProps={{
-                  readOnly: false,
-                }}
+                onChange={inputChange}
+                value={newname}
                 variant="outlined"
               />
             </Grid>
@@ -194,6 +208,9 @@ export default function FullFotos({ props }) {
                 startIcon={<SaveIcon />}
               >
                 Guardar Foto
+              </Button>
+              <Button variant="contained" onClick={cancelarT} color="secondary">
+                Cancelar
               </Button>
             </Grid>
           </Grid>

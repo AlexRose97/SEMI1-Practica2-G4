@@ -1,7 +1,7 @@
-const mysql = require("mysql");
 const mysql2 = require("mysql2/promise");
 const express = require("express");
 const app = express();
+var axios = require("axios");
 
 //funcion que procesa datos antes de que el servidor lo reciba
 const morgan = require("morgan");
@@ -32,430 +32,14 @@ app.use(express.urlencoded({ limit: "50mb" }));
 //----------AWS
 const aws_keys = require("./credenciales");
 const db_credenciales = require("./db_credenciales");
-var conn = mysql.createPool(db_credenciales);
 var connProme = mysql2.createPool(db_credenciales);
-const now = Math.random().toString(36).substring(7);
 
 //instanciamos el sdk
 var AWS = require("aws-sdk");
-const { user } = require("./db_credenciales");
 //instacinamos los servicios
 const s3 = new AWS.S3(aws_keys.s3);
-
-var autorizacioncompleta = true;
-var NombreCompleto = "";
-var UsuarioCompleto = "";
-var ImagenPerfil = "";
-var Contrasena = "";
-var autorizacionregistro = true;
-
-//---------------Ya Esta
-app.post("/api/Login----", (req, res) => {
-  const { user } = req.body;
-  const { pass } = req.body;
-  console.log("User: " + user + " Contraseña : " + pass);
-
-  conn.query(
-    `Select U.NombreUsuario,U.Nombre,U.Contrasena,I.Direccion from Usuario U,Imagen I,Album A where U.NombreUsuario='` +
-      user +
-      `' and  U.Contrasena=MD5('` +
-      pass +
-      `') and U.ID_Usuario =A.ID_Usuario and A.ID_Album=I.ID_Album and A.TipoAlbum=1 and I.Activa=1`,
-    function (err, result) {
-      if (err) throw err;
-      //res.send(result);
-      console.log("Coincidencias:" + [].concat.apply([], result).length);
-      var Cantidad = [].concat.apply([], result).length;
-
-      console.log("le" + Cantidad);
-      if (Cantidad == 1) {
-        console.log("Entre");
-        autorizacioncompleta = true;
-        NombreCompleto = result[0].Nombre;
-        Contrasena = result[0].Contrasena;
-        ImagenPerfil = result[0].Direccion;
-        UsuarioCompleto = result[0].NombreUsuario;
-      } else {
-        autorizacioncompleta = false;
-        NombreCompleto = "result.Nombre";
-        Contrasena = "result.Contrasena";
-        ImagenPerfil = "result.Direccion";
-        UsuarioCompleto = "result.NombreUsuario";
-      }
-
-      console.log(
-        autorizacioncompleta +
-          NombreCompleto +
-          UsuarioCompleto +
-          Contrasena +
-          ImagenPerfil
-      );
-      res.json({
-        autorizacion: autorizacioncompleta,
-        usuario: UsuarioCompleto,
-        nombre: NombreCompleto,
-        contrasena: Contrasena,
-        imagen: ImagenPerfil,
-      });
-    }
-  );
-});
-
-//---------------ya esta registro
-app.post("/api/Registro----", (req, res) => {
-  console.log(now);
-  const { user } = req.body;
-  const { name } = req.body;
-  const { pass } = req.body;
-  const { imagen } = req.body;
-  var sub = imagen.split(";");
-  var extension = sub[0].replace(/^data:image\//, "");
-
-  const NumeroUsuarios = { num: 0 };
-  const IdUsuario = { id: 0 };
-  const IdAlbum = { id: 0 };
-  let urlbucket =
-    "https://practica1-g4-imagenes.s3.us-east-2.amazonaws.com/Fotos_Perfil/";
-  let NombreImagen = "FotoPerfil" + now + "." + extension;
-  const IdFotografia = { id: 0 };
-  const DireccionPerfil = { direccion: urlbucket + NombreImagen };
-  var autorizacionregistro;
-
-  //Verificamos si hay un usuario con el mismo Nombre
-
-  conn.query(
-    `Select * from Usuario where NombreUsuario='` + user + `'`,
-    function (err, result) {
-      if (err) throw err;
-      //res.send(result);
-      console.log("Coincidencias:" + [].concat.apply([], result).length);
-      NumeroUsuarios.num = [].concat.apply([], result).length;
-
-      console.log("Nu_Usuario" + NumeroUsuarios.num + "\n");
-      if (NumeroUsuarios.num == 0) {
-        autorizacionregistro = true;
-
-        conn.query(
-          `Insert Into Usuario (NombreUsuario,Nombre,Contrasena) values ('` +
-            user +
-            `','` +
-            name +
-            `',MD5('` +
-            pass +
-            `'))`,
-          function (err, result) {
-            if (err) throw err;
-            console.log("Resultado Insert" + result + "\n");
-            //res.send(result);
-
-            //-----------------------Selecionamos el ID del Usuario Inresado-----------------
-
-            conn.query(
-              `Select ID_Usuario,Contrasena from Usuario where NombreUsuario='` +
-                user +
-                `'`,
-              function (err, result) {
-                if (err) throw err;
-                IdUsuario.id = result[0].ID_Usuario;
-                console.log("Id_Usuario.id: " + IdUsuario.id);
-                Contrasena = result[0].Contrasena;
-
-                //Ahora que ya tengo el ID_Usuario tengo que crear Album
-                conn.query(
-                  `Insert into Album (NombreAlbum,ID_Usuario,TipoAlbum) values ('Perfil',` +
-                    IdUsuario.id +
-                    `,1)`,
-                  function (err, result) {
-                    if (err) throw err;
-                  }
-                );
-                //Seleccionamos el ID_Album del Usuario que estamos registrando
-                conn.query(
-                  `select ID_Album from Album where ID_Usuario=` +
-                    IdUsuario.id +
-                    ` and NombreAlbum='Perfil' and TipoAlbum=1`,
-                  function (err, result) {
-                    if (err) throw err;
-                    //console.log(result);
-                    IdAlbum.id = result[0].ID_Album;
-
-                    //Ahora que ya tengo el ID del Album necesito crear una Imagen
-
-                    conn.query(
-                      `Insert into Imagen (NombreImagen,Direccion,ID_Album,Activa) values ('Perfil','` +
-                        DireccionPerfil.direccion +
-                        `',` +
-                        IdAlbum.id +
-                        `,1)`,
-                      function (err, result) {
-                        if (err) throw err;
-                      }
-                    );
-
-                    console.log("pase");
-                    var imagenperfil = imagen;
-                    var ruta = imagenperfil.replace(
-                      /^data:image\/[a-z]+;base64,/,
-                      ""
-                    );
-
-                    // ruta=imagen;
-                    //Ahora que cree la imagen de Perfil debo subir la imagen a la nube
-                    let buff = new Buffer.from(ruta, "base64");
-                    const params = {
-                      Bucket: "practica1-g4-imagenes",
-                      Key: "Fotos_Perfil/" + NombreImagen,
-                      Body: buff,
-                      ContentType: "image",
-                      ACL: "public-read",
-                    };
-                    const putResult = s3.putObject(params).promise();
-                    console.log(putResult);
-
-                    autorizacioregistro = true;
-                    NombreCompleto = name;
-                    ImagenPerfil = DireccionPerfil.direccion;
-                    UsuarioCompleto = user;
-
-                    console.log(
-                      autorizacionregistro +
-                        NombreCompleto +
-                        UsuarioCompleto +
-                        Contrasena +
-                        ImagenPerfil
-                    );
-                    res.json({
-                      autorizacion: autorizacionregistro,
-                      usuario: UsuarioCompleto,
-                      nombre: NombreCompleto,
-                      contrasena: Contrasena,
-                      imagen: ImagenPerfil,
-                    });
-                  }
-                );
-              }
-            );
-          }
-        );
-      } else {
-        console.log("No se pudo Registrar-Ya hay un");
-        autorizacioregistro = false;
-        NombreCompleto = "result.Nombre";
-        Contrasena = "result.Contrasena";
-        ImagenPerfil = "result.Direccion";
-        UsuarioCompleto = "result.NombreUsuario";
-        Contrasena = "result.Contrasena";
-        console.log(
-          autorizacionregistro +
-            NombreCompleto +
-            UsuarioCompleto +
-            Contrasena +
-            ImagenPerfil
-        );
-        res.json({
-          autorizacion: autorizacionregistro,
-          usuario: UsuarioCompleto,
-          nombre: NombreCompleto,
-          contrasena: Contrasena,
-          imagen: ImagenPerfil,
-        });
-      }
-    }
-  );
-});
-
-//---------------_Modificar----- Ya Esta
-app.post("/api/Modificar----", (req, res) => {
-  const { useractual } = req.body;
-  const { usercambio } = req.body;
-  const { name } = req.body;
-  const { imagen } = req.body;
-  var autorizacionmodificar;
-  var IDUsuario;
-  const NumeroUsuarios = { num: 0 };
-
-  //Verificar los usuarios
-  conn.query(
-    `Select ID_Usuario from Usuario where NombreUsuario='` + usercambio + `'`,
-    function (err, result) {
-      if (err) throw err;
-      NumeroUsuarios.num = [].concat.apply([], result).length;
-      //IDUsuario = result[0].ID_Usuario;
-      if (
-        (NumeroUsuarios.num == 1 && usercambio == useractual) ||
-        NumeroUsuarios.num == 0
-      ) {
-        var urlnew = false;
-        conn.query(
-          `Update Usuario set NombreUsuario='` +
-            usercambio +
-            `' ,Nombre='` +
-            name +
-            `' where NombreUsuario='` +
-            useractual +
-            `'`,
-          function (err, result) {
-            if (err) throw err;
-          }
-        );
-
-        if (imagen != false) {
-          //Crear Imagen y actualizar Datos
-
-          var sub = imagen.split(";");
-          var extension = sub[0].replace(/^data:image\//, "");
-          let urlbucket =
-            "https://practica1-g4-imagenes.s3.us-east-2.amazonaws.com/Fotos_Perfil/";
-          let NombreImagen = "FotoPerfil" + now + "." + extension;
-          const DireccionPerfil = { direccion: urlbucket + NombreImagen };
-
-          conn.query(
-            `Select ID_Album from Album where ID_Usuario=(Select ID_Usuario from Usuario where NombreUsuario='` +
-              usercambio +
-              `')and TipoAlbum=1`,
-            function (err, result) {
-              if (err) throw err;
-              var IDAlbum = result[0].ID_Album;
-              //Insertar la Foto---------------------
-              conn.query(
-                `Update Imagen set Activa=0 where ID_Album=` + IDAlbum,
-                function (err, result) {
-                  if (err) throw err;
-                }
-              );
-
-              conn.query(
-                `Insert into Imagen (NombreImagen,Direccion,ID_Album,Activa) values ('Perfil','` +
-                  DireccionPerfil.direccion +
-                  `',` +
-                  IDAlbum +
-                  `,1)`,
-                function (err, result) {
-                  if (err) throw err;
-
-                  var imagenperfil = imagen;
-                  var ruta = imagenperfil.replace(
-                    /^data:image\/[a-z]+;base64,/,
-                    ""
-                  );
-                  //ruta=imagen;
-                  //Ahora que cree la imagen de Perfil debo subir la imagen a la nube
-                  let buff = new Buffer.from(ruta, "base64");
-                  const params = {
-                    Bucket: "practica1-g4-imagenes",
-                    Key: "Fotos_Perfil/" + NombreImagen,
-                    Body: buff,
-                    ContentType: "image",
-                    ACL: "public-read",
-                  };
-                  const putResult = s3.putObject(params).promise();
-                }
-              );
-
-              autorizacionmodificar = true;
-              NombreCompleto = name;
-              ImagenPerfil = DireccionPerfil.direccion;
-              UsuarioCompleto = usercambio;
-
-              console.log(
-                autorizacionmodificar +
-                  NombreCompleto +
-                  UsuarioCompleto +
-                  Contrasena +
-                  ImagenPerfil
-              );
-              res.json({
-                autorizacion: autorizacionmodificar,
-                usuario: UsuarioCompleto,
-                nombre: NombreCompleto,
-                imagen: ImagenPerfil,
-              });
-            }
-          );
-        } else {
-          autorizacionmodificar = true;
-          NombreCompleto = name;
-          ImagenPerfil = false;
-          UsuarioCompleto = usercambio;
-
-          console.log(
-            autorizacionmodificar +
-              NombreCompleto +
-              UsuarioCompleto +
-              Contrasena +
-              ImagenPerfil
-          );
-          res.json({
-            autorizacion: autorizacionmodificar,
-            usuario: UsuarioCompleto,
-            nombre: NombreCompleto,
-            imagen: ImagenPerfil,
-          });
-        }
-      } else {
-        console.log("Error el usuario ya existe");
-        autorizacionmodificar = false;
-        NombreCompleto = "name";
-        ImagenPerfil = false;
-        UsuarioCompleto = "user";
-        console.log(
-          autorizacionmodificar +
-            NombreCompleto +
-            UsuarioCompleto +
-            Contrasena +
-            ImagenPerfil
-        );
-        res.json({
-          autorizacion: autorizacionmodificar,
-          usuario: UsuarioCompleto,
-          nombre: NombreCompleto,
-          imagen: ImagenPerfil,
-        });
-      }
-    }
-  );
-});
-
-//---------Insertar Imagen------------------
-app.post("/api/InsertarImagen----", (req, res) => {
-  const { idalbum } = req.body;
-  const { name } = req.body;
-  const { imagen } = req.body;
-
-  var sub = imagen.split(";");
-  var extension = sub[0].replace(/^data:image\//, "");
-  let urlbucket =
-    "https://practica1-g4-imagenes.s3.us-east-2.amazonaws.com/Fotos_Publicadas/";
-  let NombreImagen = name + now + "." + extension;
-  const DireccionPerfil = { direccion: urlbucket + NombreImagen };
-
-  conn.query(
-    `Insert into Imagen (NombreImagen,Direccion,ID_Album,Activa) values ('` +
-      name +
-      `','` +
-      DireccionPerfil.direccion +
-      `',` +
-      idalbum +
-      `,0)`,
-    function (err, result) {
-      if (err) throw err;
-
-      var imagenperfil = imagen;
-      var ruta = imagenperfil.replace(/^data:image\/[a-z]+;base64,/, "");
-      //ruta=imagen;
-      //Ahora que cree la imagen de Perfil debo subir la imagen a la nube
-      let buff = new Buffer.from(ruta, "base64");
-      const params = {
-        Bucket: "practica1-g4-imagenes",
-        Key: "Fotos_Publicadas/" + NombreImagen,
-        Body: buff,
-        ContentType: "image",
-        ACL: "public-read",
-      };
-      const putResult = s3.putObject(params).promise();
-    }
-  );
-});
+const rek = new AWS.Rekognition(aws_keys.rekognition);
+const translate = new AWS.Translate(aws_keys.translate);
 
 //======================================ALEX============================================
 /*
@@ -723,37 +307,142 @@ app.post("/api/ListaAlbums", async function (req, res) {
   }
 });
 
+//-------------Insertar Imagen------------
+app.post("/api/InsertarImagen", async function (req, res) {
+  const { descripcion } = req.body;
+  const { nombre } = req.body;
+  const { foto } = req.body;
+  const { idiclient } = req.body;
+  try {
+    //---------------------------------crear la imagen
+    var sub = foto.split(";");
+    var extension = "." + sub[0].replace(/^data:image\//, "");
+    let urlbucket =
+      "https://practica1-g4-imagenes.s3.us-east-2.amazonaws.com/Fotos_Publicadas/";
+    let NombreImagen = "Foto" + new Date().getTime() + extension;
+    let DireccionPerfil = urlbucket + NombreImagen;
+    //-----------------------------------subir al s3
+    var imagenperfil = foto;
+    var ruta = imagenperfil.replace(/^data:image\/[a-z]+;base64,/, "");
+    let buff = new Buffer.from(ruta, "base64");
+    const params = {
+      Bucket: "practica1-g4-imagenes",
+      Key: "Fotos_Publicadas/" + NombreImagen,
+      Body: buff,
+      ContentType: "image",
+      ACL: "public-read",
+    };
+    const putResult = await s3.putObject(params).promise();
+    console.log(putResult);
 
+    //---------------------------analizar las etiquetas
+    var datarek = {
+      Image: {
+        Bytes: buff,
+      },
+      MaxLabels: 5,
+    };
+    let etiquetas = (await rek.detectLabels(datarek).promise()).Labels;
 
+    //recorrer las etiquetas
+    for (let index = 0; index < etiquetas.length; index++) {
+      //crear los albumnes
+      //obtener el id del album
+      let query = "SELECT idbook FROM book where idiclient =? and nombre=?";
+      let [rows, fields] = await connProme.execute(query, [
+        idiclient,
+        etiquetas[index].Name,
+      ]);
+      if (rows.length == 0) {
+        //crear el album db
+        query = "INSERT INTO book (nombre, tipo,idiclient) VALUES (?, ?,?);";
+        [rows, fields] = await connProme.execute(query, [
+          etiquetas[index].Name,
+          1,
+          idiclient,
+        ]);
 
+        //obtener el id del album
+        query = "SELECT idbook FROM book where idiclient =? and nombre=?";
+        [rows, fields] = await connProme.execute(query, [
+          idiclient,
+          etiquetas[index].Name,
+        ]);
+      }
+      //insertar la imagen db
+      query =
+        "INSERT INTO picture (nombre,urlfoto,descripcion,idbook) VALUES (?,?,?,?);";
+      [rows, fields] = await connProme.execute(query, [
+        nombre,
+        DireccionPerfil,
+        descripcion,
+        rows[0].idbook,
+      ]);
+    }
 
-
-
-
-
-
-
-
+    //---------------------respuesta al cliente
+    return res.send({
+      status: 200,
+      msg: "Foto Guardada",
+    });
+  } catch (error) {
+    console.log(error);
+    return res.send({
+      status: 500,
+      msg: "Ocurrio error en el server",
+    });
+  }
+});
 
 //-------------Etiquetas del Perfil------------
 app.post("/api/EtiquetasPerfil", async function (req, res) {
   const { foto } = req.body;
   try {
-    console.log(foto);
+    //base64 from url
+    let image = await axios.get(foto, {
+      responseType: "arraybuffer",
+    });
+    let returnedB64 = Buffer.from(image.data, "base64");
+    //analizar las etiquetas
+    var datarek = {
+      Image: {
+        Bytes: returnedB64,
+      },
+      Attributes: ["ALL"],
+    };
+    let etiquetas = (await rek.detectFaces(datarek).promise()).FaceDetails;
+
     let ejemplo = [];
-    for (let index = 0; index < Math.floor(Math.random() * 10) + 5; index++) {
+    if (etiquetas.length > 0) {
+      //agregar rango de edad
       ejemplo.push({
-        etiqueta: String(Math.random().toString(36).substring(7)),
+        etiqueta:
+          "edad " +
+          String(etiquetas[0].AgeRange.Low) +
+          "-" +
+          String(etiquetas[0].AgeRange.High),
+      });
+      //agregar genero
+      ejemplo.push({
+        etiqueta: String(etiquetas[0].Gender.Value),
+      });
+      //Ojos abiertos
+      ejemplo.push({
+        etiqueta: "Ojos Abiertos: " + String(etiquetas[0].EyesOpen.Value),
+      });
+      //Emociones
+      ejemplo.push({
+        etiqueta: "Emotion: " + String(etiquetas[0].Emotions[0].Type),
+      });
+      //sonrisa
+      ejemplo.push({
+        etiqueta: "Sonrisa: " + String(etiquetas[0].Smile.Value),
+      });
+    } else {
+      ejemplo.push({
+        etiqueta: "No es posible analizar la imagen",
       });
     }
-    /*
-    esto es lo que leo desde el frontEnd
-    ejemplo=[
-      {etiqueta:"valor"},
-      {etiqueta:"valor"},
-      {etiqueta:"valor"},
-    ]
-    */
     return res.send(ejemplo);
   } catch (error) {
     console.log(error);
@@ -764,14 +453,29 @@ app.post("/api/EtiquetasPerfil", async function (req, res) {
   }
 });
 
-//-------------Etiquetas del Perfil------------
+//-------------Traduccion Foto------------
 app.post("/api/Traducir", async function (req, res) {
   const { idioma } = req.body;
   const { texto } = req.body;
   try {
+    let lenguaje = "ja";
+    if (idioma == "Ingles") {
+      lenguaje = "en";
+    } else if (idioma == "Español") {
+      lenguaje = "es";
+    } else if (idioma == "Ruso") {
+      lenguaje = "ru";
+    }
+    let params = {
+      SourceLanguageCode: "auto",
+      TargetLanguageCode: lenguaje,
+      Text: texto || "Hello there",
+    };
+    let trad = await (await translate.translateText(params).promise())
+      .TranslatedText;
     return res.send({
       status: 200,
-      texto: "Bueno aca va la traduccion desde el server",
+      texto: trad,
     });
   } catch (error) {
     console.log(error);
