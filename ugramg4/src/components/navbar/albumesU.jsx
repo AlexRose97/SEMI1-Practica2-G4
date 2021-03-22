@@ -90,17 +90,16 @@ export default function FullAlbum({ props }) {
       })
       .then((json) => {
         //console.log(json);
-        console.log(json);
         setconsulta(json);
       })
       .catch((error) => {
         console.error(error);
       });
-  }, []);
+  },[]);
 
   const GenerarFotos = (listFots) => {
     const tileData = [];
-    if (listFots != undefined) {
+    if (listFots !== undefined) {
       for (let index = 0; index < listFots.length; index++) {
         tileData.push({
           img: listFots[index].urlfoto,
@@ -230,6 +229,7 @@ export default function FullAlbum({ props }) {
             <img
               src={infoIMG.img}
               style={{ maxWidth: "100%", maxHeight: 500 }}
+              alt={""}
             />
           </Typography>
           <Typography gutterBottom>{infoIMG.descripcion}</Typography>

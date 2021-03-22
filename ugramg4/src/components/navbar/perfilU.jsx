@@ -158,7 +158,7 @@ export default function FullPerfil({ props }) {
             spacing={4}
           >
             <Grid item xs>
-              <img src={newfoto} className={classes.photo} />
+              <img src={newfoto} className={classes.photo} alt={""}/>
             </Grid>
             <Grid item xs>
               <input

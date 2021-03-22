@@ -486,6 +486,41 @@ app.post("/api/Traducir", async function (req, res) {
   }
 });
 
+//-------------Detectar Texto------------
+app.post("/api/DetectarTexto", async function (req, res) {
+  const { foto } = req.body;
+  try {
+    //---------------------------------crear la imagen
+    var imagenperfil = foto;
+    var ruta = imagenperfil.replace(/^data:image\/[a-z]+;base64,/, "");
+    let buff = new Buffer.from(ruta, "base64");
+    //analizar las etiquetas
+    var datarek = {
+      Image: {
+        Bytes: buff,
+      },
+    };
+    let textoFoto = await (await rek.detectText(datarek).promise())
+      .TextDetections;
+    let txt = "";
+    for (const i in textoFoto) {
+      if (textoFoto[i].Type == "LINE") {
+        txt = txt + String(textoFoto[i].DetectedText) + "\n";
+      }
+    }
+    return res.send({
+      status: 200,
+      texto: txt,
+    });
+  } catch (error) {
+    console.log(error);
+    return res.send({
+      status: 400,
+      msg: "Ocurrio error en el server",
+    });
+  }
+});
+
 //iniciando servidor
 app.listen(app.get("port"), () => {
   console.log(`http://localhost:${app.get("port")}`);
