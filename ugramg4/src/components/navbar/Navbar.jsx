@@ -58,7 +58,7 @@ export default function Navbar({ props, tituloP, foto}) {
 
   return (
     <div className={classes.root}>
-      <AppBar position="static">
+      <AppBar position="fixed">
         <Toolbar>
           <IconButton
             edge="start"
@@ -79,6 +79,7 @@ export default function Navbar({ props, tituloP, foto}) {
           </MenuItem>
         </Toolbar>
       </AppBar>
+      <Toolbar/>
       <Drawer
         anchor={anchor}
         open={openDraw}

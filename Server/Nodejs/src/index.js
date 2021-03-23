@@ -194,6 +194,66 @@ app.post("/api/LoginDatos", async function (req, res) {
   }
 });
 
+//-------------login rekognition---------------
+app.post("/api/LoginFoto", async function (req, res) {
+  const { foto } = req.body;
+  try {
+    //obtener todos los clientes
+    let query = "Select * from client";
+    let [rows, fields] = await connProme.query(query);
+    if (rows.length != 0) {
+      //---------------------------------crear la imagen
+      var imagenperfil = foto;
+      var ruta = imagenperfil.replace(/^data:image\/[a-z]+;base64,/, "");
+      let buff = new Buffer.from(ruta, "base64");
+
+      //----------recorrer los perfiles de db
+      for (let i = 0; i < rows.length; i++) {
+        const fotodb = rows[i].urlfoto;
+        //base64 from url
+        let image = await axios.get(fotodb, {
+          responseType: "arraybuffer",
+        });
+        let returnedB64 = Buffer.from(image.data, "base64");
+
+        //----------comparar foto con fotodb
+        var params = {
+          SourceImage: {
+            Bytes: buff,
+          },
+          TargetImage: {
+            Bytes: returnedB64,
+          },
+          SimilarityThreshold: "80",
+        };
+        let resultCompa = (await rek.compareFaces(params).promise())
+          .FaceMatches;
+        if (resultCompa.length > 0) {
+          return res.send({
+            status: 200,
+            user:rows[i],
+          });
+        }
+      }
+      return res.send({
+        status: 400,
+        msg: "Datos no encontrados",
+      });
+    } else {
+      return res.send({
+        status: 400,
+        msg: "Datos no encontrados",
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    return res.send({
+      status: 500,
+      msg: "Ocurrio error en el server",
+    });
+  }
+});
+
 //---------------------------------
 app.post("/api/Modificar", async function (req, res) {
   const { newuser } = req.body;
