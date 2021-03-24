@@ -55,6 +55,9 @@ export default function Navbar({ props, tituloP, foto}) {
   const irFotos = () => {
     props.history.push("/Fotos");
   };
+  const irChatBot = () => {
+    props.history.push("/ChatBot");
+  };
 
   return (
     <div className={classes.root}>
@@ -106,6 +109,9 @@ export default function Navbar({ props, tituloP, foto}) {
               </Button>
               <Button style={{ width: "100%" }} onClick={irFotos}>
                 Fotos
+              </Button>
+              <Button style={{ width: "100%" }} onClick={irChatBot}>
+                Ayuda
               </Button>
             </div>
           ) : (
