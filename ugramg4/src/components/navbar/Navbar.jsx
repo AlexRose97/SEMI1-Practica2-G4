@@ -55,8 +55,14 @@ export default function Navbar({ props, tituloP, foto}) {
   const irFotos = () => {
     props.history.push("/Fotos");
   };
-  const irChatBot = () => {
-    props.history.push("/ChatBot");
+  const irChatBotAyuda = () => {
+    props.history.push("/ChatbotAyuda");
+  };
+  const irChatBotCarro = () => {
+    props.history.push("/ChatbotCarro");
+  };
+  const irChatBotOtro = () => {
+    props.history.push("/ChatbotOtro");
   };
 
   return (
@@ -110,8 +116,14 @@ export default function Navbar({ props, tituloP, foto}) {
               <Button style={{ width: "100%" }} onClick={irFotos}>
                 Fotos
               </Button>
-              <Button style={{ width: "100%" }} onClick={irChatBot}>
-                Ayuda
+              <Button style={{ width: "100%" }} onClick={irChatBotAyuda}>
+                Carro
+              </Button>
+              <Button style={{ width: "100%" }} onClick={irChatBotCarro}>
+                Viajes
+              </Button>
+              <Button style={{ width: "100%" }} onClick={irChatBotOtro}>
+                Flores
               </Button>
             </div>
           ) : (

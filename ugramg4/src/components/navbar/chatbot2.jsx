@@ -8,7 +8,7 @@ import Credenciales from "../Credenciales";
 
 Amplify.configure(awsconfig);
 // Imported default theme can be customized by overloading attributes
-export class ChatPageAyuda extends React.Component {
+export class ChatPageCarro extends React.Component {
   render() {
     return (
       <div style={{ minWidth: "100%" }}>
@@ -17,7 +17,7 @@ export class ChatPageAyuda extends React.Component {
           tituloP={"Inicio"}
           foto={Credenciales.Perfil}
         />
-        <FullChatPageAyuda props={this.props} />
+        <FullChatPageCarro props={this.props} />
       </div>
     );
   }
@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme) => ({
     padding: theme.spacing(2),
   },
 }));
-export default function FullChatPageAyuda({ props }) {
+export default function FullChatPageCarro({ props }) {
   const classes = useStyles();
 
   const handleComplete = (err, confirmation) => {
@@ -42,11 +42,11 @@ export default function FullChatPageAyuda({ props }) {
   };
   return (
     <div className={classes.root}>
-      <h1>ChatBot de Ayuda</h1>
+      <h1>ChatBot Demo Carro</h1>
       <ChatBot
         title="My ChatBot"
         botName="BookTrip_esLATAM"
-        welcomeMessage="Hola T, Que pex?"
+        welcomeMessage="Holav , ¿que puedo hacer por ti?"
         onComplete={handleComplete}
         clearOnComplete={true}
         conversationModeOn={false}

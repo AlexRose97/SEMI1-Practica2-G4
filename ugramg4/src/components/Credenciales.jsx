@@ -1,7 +1,7 @@
 class Credenciales {
     constructor() {
       this.authenticated = false;
-      this.host="localhost"
+      this.host="54.236.50.79"
       //variables Login-------
       this.User="";
       this.Perfil="";
