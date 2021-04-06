@@ -42,14 +42,17 @@ Se configuro un Usuario para la gestion de los distintos Buckets "Usuario_S3_G4"
 
 <h2>Amazon Lex </h2>
 Se configuro el servicio para la gestion y analizis de texto para diseñar y construir la interfaz de conversacion ,  el chatbot a utilizar en este proyecto.
+Las 3 configuraciones del chatbot a implementar fueron el apartar un vuelo en una agencia de vuelo, solicitar el envio de un producto a una venta de flores y el alquilar un vehiculo.
 
 <h2>Amazon Rekognition </h2>
 Se configuro el servicio de analisis de imagenes y video para recnocimiento de imagenes e inicio de sesion de la aplicacion.
+Facial Analysis: para detectar atributos de un rostro cuando aparece en una fotografia.
+
+Compare Faces: Comparar rostros/ caras en una imagen de origen con una imagen destino.
+
 
 <h2>Amazon Translate </h2>
 Se configuro el servicio de traduccion automatica que ofrece traduccion automatica entre idiomas.
-
-
 
 
 <center><h1>  Caputuras de Pantalla </h1></center>
